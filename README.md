@@ -1,1 +1,1 @@
-# smr
+simple rust ray tracer
