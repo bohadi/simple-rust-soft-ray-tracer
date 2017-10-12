@@ -3,12 +3,58 @@ use cgmath::Point3;
 use cgmath::Vector3;
 use image::Rgba;
 
+use std::f64::consts::PI;
+
 use render::*;
 
-pub struct Light {
+pub struct DirectionalLight {
     pub direction: Vector3<f64>,
     pub color: Rgba<f64>,
     pub intensity: f64,
+}
+
+pub struct SphericalLight {
+    pub position: Point3<f64>,
+    pub color: Rgba<f64>,
+    pub intensity: f64,
+}
+
+pub enum Light {
+    Directional(DirectionalLight),
+    Spherical(SphericalLight),
+}
+
+impl Light {
+    pub fn color(&self) -> Rgba<f64> {
+        match *self {
+            Light::Directional(ref d) => d.color,
+            Light::Spherical(ref s) => s.color,
+        }
+    }
+
+    pub fn direction_from(&self, hit_point: &Point3<f64>) -> Vector3<f64> {
+        match *self {
+            Light::Directional(ref d) => -d.direction.normalize(),
+            Light::Spherical(ref s) => (s.position - *hit_point).normalize(),
+        }
+    }
+
+    pub fn intensity(&self, hit_point: &Point3<f64>) -> f64 {
+        match *self {
+            Light::Directional(ref d) => d.intensity,
+            Light::Spherical(ref s) => {
+                let r2 = (s.position - *hit_point).magnitude2();
+                s.intensity / (r2 * 4.0 * PI)
+            }
+        }
+    }
+
+    pub fn distance(&self, hit_point: &Point3<f64>) -> f64 {
+        match *self {
+            Light::Directional(_) => ::std::f64::INFINITY,
+            Light::Spherical(ref s) => (s.position - *hit_point).magnitude(),
+        }
+    }
 }
 
 pub struct Plane {
@@ -124,8 +170,6 @@ pub struct Scene {
     pub width: u32,
     pub height: u32,
     pub fov: f64,
-    //pub spheres: [Sphere; 3],
-    //pub ground: Plane,
     pub elements: Vec<Element>,
     pub lights: Vec<Light>,
 

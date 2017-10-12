@@ -30,19 +30,19 @@ pub fn test_render_scene() {
         fov:    scene::FOV,
         elements: vec!
         [Element::Sphere(Sphere {
-            center: Point3::new(0.0, 0.5, -5.0),
+            center: Point3::new(0.0, 0.5, -4.0),
             radius: 1.0,
             color : Rgba { data: [0.4, 1.0, 0.4, 1.0] },
             albedo: 1.0,
         }),
         Element::Sphere(Sphere {
-            center: Point3::new(-3.0, 2.0, -7.0),
+            center: Point3::new(-3.0, 2.0, -6.0),
             radius: 1.5,
             color : Rgba { data: [1.0, 0.4, 0.4, 1.0] },
             albedo: 1.0,
         }),
         Element::Sphere(Sphere {
-            center: Point3::new(1.2, 2.0, -5.0),
+            center: Point3::new(1.2, 2.0, -4.0),
             radius: 0.7,
             color : Rgba { data: [0.4, 0.4, 1.0, 1.0] },
             albedo: 1.0,
@@ -50,20 +50,31 @@ pub fn test_render_scene() {
         Element::Plane(Plane {
             origin: Point3::new(0.0, -0.2, 0.0),
             normal: Vector3::new(0.0, -1.0, 0.0),
-            color : Rgba { data: [0.4, 0.4, 0.4, 1.0] },
+            color : Rgba { data: [0.1, 0.3, 0.1, 1.0] },
+            albedo: 1.0,
+        }),
+        Element::Plane(Plane {
+            origin: Point3::new(0.0, 0.0, -20.0),
+            normal: Vector3::new(0.0, 0.0, -1.0),
+            color : Rgba { data: [0.3, 0.3, 0.7, 1.0] },
             albedo: 1.0,
         })],
         lights: vec![
-        Light {
-            direction: Vector3::new(-1.0, -1.0, 0.1),
-            color: Rgba { data: [1.0, 1.0, 1.0, 1.0] },
-            intensity: 1.0,
-        },
-        Light {
-            direction: Vector3::new(0.1, 0.0, -1.0),
-            color: Rgba { data: [1.0, 1.0, 1.0, 1.0] },
-            intensity: 0.3,
-        }],
+        // Light::Directional(DirectionalLight {
+        //     direction: Vector3::new(-1.0, -1.0, 0.3),
+        //     color: Rgba { data: [1.0, 1.0, 1.0, 1.0] },
+        //     intensity: 1.0,
+        //  }),
+         Light::Spherical(SphericalLight {
+             position: Point3::new(2.0, 7.0, -5.0),
+             color: Rgba { data: [1.0, 1.0, 1.0, 1.0] },
+             intensity: 1000000.0,
+        }),
+         Light::Spherical(SphericalLight {
+             position: Point3::new(2.0, 7.0, 0.0),
+             color: Rgba { data: [1.0, 1.0, 1.0, 1.0] },
+             intensity: 1000000.0,
+        })],
     };
 
     let img: DynamicImage = render(&scene);

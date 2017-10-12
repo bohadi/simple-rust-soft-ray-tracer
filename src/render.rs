@@ -36,37 +36,37 @@ fn get_reflect_color(ec: &Rgba<f64>, lc: &Rgba<f64>, power: f64, reflect: f64) -
     Rgba { data: [r, g, b, a]}
 }
 fn accumulate_color(acc: &Rgba<u8>, lit: &Rgba<u8>) -> Rgba<u8> {
-    let r = (acc.data[0] + lit.data[0]).min(255);
-    let g = (acc.data[1] + lit.data[1]).min(255);
-    let b = (acc.data[2] + lit.data[2]).min(255);
-    let a = (acc.data[3] + lit.data[3]).min(255);
+    let r = (acc.data[0] + lit.data[0]).max(0).min(255);
+    let g = (acc.data[1] + lit.data[1]).max(0).min(255);
+    let b = (acc.data[2] + lit.data[2]).max(0).min(255);
+    let a = (acc.data[3] + lit.data[3]).max(0).min(255);
     Rgba { data: [r, g, b, a]}
 }
 
 pub fn cast_ray(scene: &Scene, ray: &Ray, depth: u8) -> Rgba<u8> {
     if depth > MAX_DEPTH { return BLACK; }
     let intersection = scene.trace(ray);
-    match intersection {
-        Some(i) => {
-            let hit_point = ray.origin + (ray.direction * i.distance);
-            let surface_normal = i.element.surface_normal(&hit_point);
-            let mut color_acc: Rgba<u8> = Rgba { data: [0, 0, 0, 0] };
-            for light in &scene.lights {
-                let light_direction = -light.direction.normalize();
-                let shadow_ray = Ray {
-                    origin: hit_point + (surface_normal * SHADOW_BIAS),
-                    direction: light_direction,
-                };
-                let ambient: f64 = 0.1;
-                let in_light = scene.trace(&shadow_ray).is_none();
-                let light_intensity = if in_light { light.intensity } else { ambient };
-                let light_power = (surface_normal.dot(light_direction)).max(0.0) * light_intensity;
-                let reflect_proportion = i.element.albedo() / PI;
-                let lit = get_reflect_color(&i.element.color(), &light.color, light_power, reflect_proportion);
-                color_acc = accumulate_color(&color_acc, &lit);
-            }
-            color_acc
-        },
-        None => BLACK
+    if intersection.is_none() { return BLACK; } else {
+        let i = intersection.unwrap();
+        let hit_point = ray.origin + (ray.direction * i.distance);
+        let surface_normal = i.element.surface_normal(&hit_point);
+        let mut color_acc: Rgba<u8> = BLACK;
+        for light in &scene.lights {
+            let light_direction = light.direction_from(&hit_point);
+            let shadow_ray = Ray {
+                origin: hit_point + (surface_normal * SHADOW_BIAS),
+                direction: light_direction,
+            };
+            let shadow_intersection = scene.trace(&shadow_ray);
+            let in_light = shadow_intersection.is_none() ||
+                shadow_intersection.unwrap().distance > light.distance(&hit_point);
+            let ambient: f64 = 0.0;
+            let light_intensity = if in_light { light.intensity(&hit_point) } else { ambient };
+            let light_power = (surface_normal.dot(light_direction)).max(0.0) * light_intensity;
+            let reflect_proportion = i.element.albedo() / PI;
+            let lit = get_reflect_color(&i.element.color(), &light.color(), light_power, reflect_proportion);
+            color_acc = accumulate_color(&color_acc, &lit);
+        }
+        return color_acc;
     }
 }
