@@ -112,6 +112,7 @@ pub const RESO_W: u32 = 1600;
 pub const RESO_H: u32 = 900;
 pub const ASPECT: f64 = (RESO_W as f64) / (RESO_H as f64);
 pub const FOV:    f64 = 70.0;
+pub const SHADOW_BIAS: f64 = 1e-13;
 pub const _MAP_X:  u16 = 10;
 pub const _MAP_Y:  u16 = 10;
 pub const _BLOCK_DIM: u8 = 1;

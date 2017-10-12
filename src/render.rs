@@ -27,6 +27,7 @@ impl Ray {
     }
 }
 
+//TODO implement overloaded mul, add image::Rgba
 fn get_reflect_color(ec: &Rgba<f64>, lc: &Rgba<f64>, power: f64, reflect: f64) -> Rgba<u8> {
     let r = (ec.data[0] * lc.data[0] * power * reflect * 255.0) as u8;
     let g = (ec.data[1] * lc.data[1] * power * reflect * 255.0) as u8;
@@ -34,7 +35,13 @@ fn get_reflect_color(ec: &Rgba<f64>, lc: &Rgba<f64>, power: f64, reflect: f64) -
     let a = (ec.data[3] * lc.data[3] * power * reflect * 255.0) as u8;
     Rgba { data: [r, g, b, a]}
 }
-
+fn accumulate_color(acc: &Rgba<u8>, lit: &Rgba<u8>) -> Rgba<u8> {
+    let r = (acc.data[0] + lit.data[0]).min(255);
+    let g = (acc.data[1] + lit.data[1]).min(255);
+    let b = (acc.data[2] + lit.data[2]).min(255);
+    let a = (acc.data[3] + lit.data[3]).min(255);
+    Rgba { data: [r, g, b, a]}
+}
 
 pub fn cast_ray(scene: &Scene, ray: &Ray, depth: u8) -> Rgba<u8> {
     if depth > MAX_DEPTH { return BLACK; }
@@ -43,10 +50,22 @@ pub fn cast_ray(scene: &Scene, ray: &Ray, depth: u8) -> Rgba<u8> {
         Some(i) => {
             let hit_point = ray.origin + (ray.direction * i.distance);
             let surface_normal = i.element.surface_normal(&hit_point);
-            let light_dir = -scene.lights[0].direction.normalize();
-            let light_power = (surface_normal.dot(light_dir)).max(0.0) * scene.lights[0].intensity;
-            let reflect_proportion = i.element.albedo() / PI;
-            get_reflect_color(&i.element.color(), &scene.lights[0].color, light_power, reflect_proportion)
+            let mut color_acc: Rgba<u8> = Rgba { data: [0, 0, 0, 0] };
+            for light in &scene.lights {
+                let light_direction = -light.direction.normalize();
+                let shadow_ray = Ray {
+                    origin: hit_point + (surface_normal * SHADOW_BIAS),
+                    direction: light_direction,
+                };
+                let ambient: f64 = 0.1;
+                let in_light = scene.trace(&shadow_ray).is_none();
+                let light_intensity = if in_light { light.intensity } else { ambient };
+                let light_power = (surface_normal.dot(light_direction)).max(0.0) * light_intensity;
+                let reflect_proportion = i.element.albedo() / PI;
+                let lit = get_reflect_color(&i.element.color(), &light.color, light_power, reflect_proportion);
+                color_acc = accumulate_color(&color_acc, &lit);
+            }
+            color_acc
         },
         None => BLACK
     }

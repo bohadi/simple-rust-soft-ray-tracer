@@ -30,20 +30,20 @@ pub fn test_render_scene() {
         fov:    scene::FOV,
         elements: vec!
         [Element::Sphere(Sphere {
-            center: Point3::new(0.0, 0.5, -3.0),
+            center: Point3::new(0.0, 0.5, -5.0),
             radius: 1.0,
             color : Rgba { data: [0.4, 1.0, 0.4, 1.0] },
             albedo: 1.0,
         }),
         Element::Sphere(Sphere {
-            center: Point3::new(-2.0, 2.0, -5.0),
-            radius: 1.0,
+            center: Point3::new(-3.0, 2.0, -7.0),
+            radius: 1.5,
             color : Rgba { data: [1.0, 0.4, 0.4, 1.0] },
             albedo: 1.0,
         }),
         Element::Sphere(Sphere {
-            center: Point3::new(1.0, 3.0, -12.0),
-            radius: 6.0,
+            center: Point3::new(1.2, 2.0, -5.0),
+            radius: 0.7,
             color : Rgba { data: [0.4, 0.4, 1.0, 1.0] },
             albedo: 1.0,
         }),
@@ -55,9 +55,14 @@ pub fn test_render_scene() {
         })],
         lights: vec![
         Light {
-            direction: Vector3::new(-0.5, -1.0, 0.0),
+            direction: Vector3::new(-1.0, -1.0, 0.1),
             color: Rgba { data: [1.0, 1.0, 1.0, 1.0] },
             intensity: 1.0,
+        },
+        Light {
+            direction: Vector3::new(0.1, 0.0, -1.0),
+            color: Rgba { data: [1.0, 1.0, 1.0, 1.0] },
+            intensity: 0.3,
         }],
     };
 
