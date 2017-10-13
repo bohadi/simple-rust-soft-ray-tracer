@@ -61,12 +61,13 @@ pub struct Plane {
     pub origin: Point3<f64>,
     pub normal: Vector3<f64>,
     pub color: Rgba<f64>,
-    pub albedo: f64,
+    pub diffuse: f64,
+    pub specular: f64,
 }
 
 impl Plane {
-    pub fn new(origin: Point3<f64>, normal: Vector3<f64>, color: Rgba<f64>, albedo: f64) -> Plane {
-        Plane { origin: origin, normal: normal.normalize(), color: color, albedo: albedo}
+    pub fn new(origin: Point3<f64>, normal: Vector3<f64>, color: Rgba<f64>, diffuse: f64, specular: f64) -> Plane {
+        Plane { origin: origin, normal: normal.normalize(), color: color, diffuse: diffuse, specular: specular}
     }
 }
 
@@ -74,7 +75,8 @@ pub struct Sphere {
     pub center: Point3<f64>,
     pub radius: f64,
     pub color:  Rgba<f64>,
-    pub albedo: f64,
+    pub diffuse: f64,
+    pub specular: f64,
 }
 
 pub enum Element {
@@ -89,10 +91,16 @@ impl Element {
             Element::Plane(ref p)  => &p.color,
         }
     }
-    pub fn albedo(&self) -> f64 {
+    pub fn diffuse(&self) -> f64 {
         match *self {
-            Element::Sphere(ref s) => s.albedo,
-            Element::Plane(ref p)  => p.albedo,
+            Element::Sphere(ref s) => s.diffuse,
+            Element::Plane(ref p)  => p.diffuse,
+        }
+    }
+    pub fn specular(&self) -> f64 {
+        match *self {
+            Element::Sphere(ref s) => s.specular,
+            Element::Plane(ref p)  => p.specular,
         }
     }
 }
@@ -163,8 +171,9 @@ pub const _MAP_X:  u16 = 10;
 pub const _MAP_Y:  u16 = 10;
 pub const _BLOCK_DIM: u8 = 1;
 
-pub const MAX_DEPTH: u8 = 10;
-pub const BLACK: Rgba<u8> = Rgba { data: [0, 0, 0, 0] };
+pub const MAX_DEPTH: u8 = 6;
+pub const BLACK: Rgba<f64> = Rgba { data: [0., 0., 0., 1.] };
+pub const WHITE: Rgba<f64> = Rgba { data: [1., 1., 1., 1.] };
 
 pub struct Scene {
     pub width: u32,
